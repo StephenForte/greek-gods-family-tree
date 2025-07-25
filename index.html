@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Greek Gods Family Tree</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1 class="title">
+                <i class="fas fa-tree"></i>
+                Greek Gods Family Tree
+            </h1>
+            <p class="subtitle">Explore the divine lineage of Mount Olympus</p>
+        </header>
+
+        <div class="controls">
+            <button id="expandAll" class="btn btn-primary">
+                <i class="fas fa-expand-arrows-alt"></i>
+                Expand All
+            </button>
+            <button id="collapseAll" class="btn btn-secondary">
+                <i class="fas fa-compress-arrows-alt"></i>
+                Collapse All
+            </button>
+            <button id="resetView" class="btn btn-accent">
+                <i class="fas fa-home"></i>
+                Reset View
+            </button>
+        </div>
+
+        <div class="family-tree-container">
+            <div id="familyTree" class="family-tree"></div>
+        </div>
+
+        <div id="godModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <div id="modalContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 
