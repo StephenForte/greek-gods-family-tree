@@ -41,7 +41,9 @@ export function searchDeities(data, query) {
   if (!q) return Object.values(data);
 
   return Object.values(data).filter((god) => {
-    const haystack = [god.name, god.title, god.description, god.mythology, ...(god.children || [])]
+    // Search only the deity's own fields — not children names — so a query for a
+    // child (e.g. "Apollo") does not also match parents that list that child.
+    const haystack = [god.name, god.title, god.description, god.mythology]
       .join(' ')
       .toLowerCase();
     return haystack.includes(q);
