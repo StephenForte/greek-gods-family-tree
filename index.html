@@ -22,9 +22,11 @@
 
   <div class="page">
     <header class="hero">
-      <p class="brand">Theoi</p>
-      <h1 class="hero__title">Greek Gods Family Tree</h1>
-      <p class="hero__lede">Trace lineage from Chaos to Olympus — expand branches, search the pantheon, and open each deity’s story.</p>
+      <div class="hero__copy">
+        <p class="brand">Theoi</p>
+        <h1 class="hero__title">Greek Gods Family Tree</h1>
+        <p class="hero__lede">Trace lineage from Chaos to Olympus — expand branches, search the pantheon, and open each deity’s story.</p>
+      </div>
       <div class="hero__actions">
         <a class="btn btn-primary" href="#main">Enter the lineage</a>
         <label class="search-field">
@@ -34,15 +36,23 @@
       </div>
     </header>
 
-    <div class="toolbar" role="toolbar" aria-label="Tree controls">
-      <button id="expandAll" type="button" class="btn btn-secondary">Expand all</button>
-      <button id="collapseAll" type="button" class="btn btn-secondary">Collapse all</button>
-      <button id="resetView" type="button" class="btn btn-ghost">Reset view</button>
-    </div>
+    <section class="tree-panel" aria-label="Family tree workspace">
+      <div class="tree-panel__chrome">
+        <div class="tree-panel__heading">
+          <h2 class="tree-panel__title">Divine lineage</h2>
+          <p class="tree-panel__hint">Expand a deity to reveal their descendants</p>
+        </div>
+        <div class="toolbar" role="toolbar" aria-label="Tree controls">
+          <button id="expandAll" type="button" class="btn btn-secondary">Expand all</button>
+          <button id="collapseAll" type="button" class="btn btn-secondary">Collapse all</button>
+          <button id="resetView" type="button" class="btn btn-ghost">Reset view</button>
+        </div>
+      </div>
 
-    <main id="main" class="family-tree-container" tabindex="-1">
-      <div id="familyTree" class="family-tree"></div>
-    </main>
+      <main id="main" class="family-tree-container" tabindex="-1">
+        <div id="familyTree" class="family-tree"></div>
+      </main>
+    </section>
 
     <p id="statusRegion" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true"></p>
   </div>
