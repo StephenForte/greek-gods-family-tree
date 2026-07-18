@@ -1,50 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Greek Gods Family Tree</title>
-    <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Explore the divine lineage of Greek gods and goddesses in an interactive family tree.">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; script-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'">
+  <title>Theoi — Greek Gods Family Tree</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="src/styles.css">
 </head>
 <body>
-    <div class="container">
-        <header class="header">
-            <h1 class="title">
-                <i class="fas fa-tree"></i>
-                Greek Gods Family Tree
-            </h1>
-            <p class="subtitle">Explore the divine lineage of Mount Olympus</p>
-        </header>
+  <a class="skip-link" href="#main">Skip to family tree</a>
 
-        <div class="controls">
-            <button id="expandAll" class="btn btn-primary">
-                <i class="fas fa-expand-arrows-alt"></i>
-                Expand All
-            </button>
-            <button id="collapseAll" class="btn btn-secondary">
-                <i class="fas fa-compress-arrows-alt"></i>
-                Collapse All
-            </button>
-            <button id="resetView" class="btn btn-accent">
-                <i class="fas fa-home"></i>
-                Reset View
-            </button>
-        </div>
+  <div class="atmosphere" aria-hidden="true">
+    <div class="atmosphere__glow atmosphere__glow--a"></div>
+    <div class="atmosphere__glow atmosphere__glow--b"></div>
+    <div class="atmosphere__stars"></div>
+  </div>
 
-        <div class="family-tree-container">
-            <div id="familyTree" class="family-tree"></div>
-        </div>
+  <div class="page">
+    <header class="hero">
+      <p class="brand">Theoi</p>
+      <h1 class="hero__title">Greek Gods Family Tree</h1>
+      <p class="hero__lede">Trace lineage from Chaos to Olympus — expand branches, search the pantheon, and open each deity’s story.</p>
+      <div class="hero__actions">
+        <a class="btn btn-primary" href="#main">Enter the lineage</a>
+        <label class="search-field">
+          <span class="visually-hidden">Search deities</span>
+          <input id="searchGods" type="search" placeholder="Search deities…" autocomplete="off" spellcheck="false">
+        </label>
+      </div>
+    </header>
 
-        <div id="godModal" class="modal">
-            <div class="modal-content">
-                <span class="close">&times;</span>
-                <div id="modalContent"></div>
-            </div>
-        </div>
+    <div class="toolbar" role="toolbar" aria-label="Tree controls">
+      <button id="expandAll" type="button" class="btn btn-secondary">Expand all</button>
+      <button id="collapseAll" type="button" class="btn btn-secondary">Collapse all</button>
+      <button id="resetView" type="button" class="btn btn-ghost">Reset view</button>
     </div>
 
-    <script src="script.js"></script>
+    <main id="main" class="family-tree-container" tabindex="-1">
+      <div id="familyTree" class="family-tree"></div>
+    </main>
+
+    <p id="statusRegion" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true"></p>
+  </div>
+
+  <div id="godModal" class="modal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="modal-title">
+    <div class="modal-content">
+      <button type="button" class="close" data-close-modal aria-label="Close details">×</button>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <script type="module" src="src/main.js"></script>
 </body>
-</html> 
+</html>
