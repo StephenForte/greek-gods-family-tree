@@ -39,6 +39,15 @@ describe('searchDeities', () => {
     const byDomain = searchDeities(greekGodsData, 'underworld');
     expect(byDomain.map((g) => g.name)).toEqual(expect.arrayContaining(['Hades', 'Persephone']));
   });
+
+  it('does not match parents solely because they list a child', () => {
+    const apolloMatches = searchDeities(greekGodsData, 'Apollo').map((g) => g.name);
+    expect(apolloMatches).toContain('Apollo');
+    expect(apolloMatches).not.toContain('Zeus');
+
+    const hestiaMatches = searchDeities(greekGodsData, 'Hestia').map((g) => g.name);
+    expect(hestiaMatches).toEqual(['Hestia']);
+  });
 });
 
 describe('deitiesWithChildren', () => {
