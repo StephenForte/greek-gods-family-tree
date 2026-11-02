@@ -1,6 +1,6 @@
 import { GENERATION_META, getDeity, getGodsByGeneration, greekGodsData } from '../data/gods.js';
 import { el, focusFirstFocusable, trapFocus } from '../utils/dom.js';
-import { groupChildrenByType, resolveChildren, searchDeities } from '../utils/taxonomy.js';
+import { findParents, groupChildrenByType, resolveChildren, searchDeities } from '../utils/taxonomy.js';
 
 let instanceCounter = 0;
 
@@ -12,9 +12,20 @@ export class FamilyTree {
    * @param {HTMLElement} options.modalContent - modal body host
    * @param {HTMLElement} [options.searchInput]
    * @param {HTMLElement} [options.statusRegion] - live region for announcements
+   * @param {HTMLElement} [options.summary] - visible match / filter summary
+   * @param {HTMLElement} [options.generationFilters]
    * @param {object} [options.data]
    */
-  constructor({ root, modal, modalContent, searchInput = null, statusRegion = null, data = greekGodsData }) {
+  constructor({
+    root,
+    modal,
+    modalContent,
+    searchInput = null,
+    statusRegion = null,
+    summary = null,
+    generationFilters = null,
+    data = greekGodsData,
+  }) {
     if (!root || !modal || !modalContent) {
       throw new Error('FamilyTree requires root, modal, and modalContent elements');
     }
@@ -25,8 +36,12 @@ export class FamilyTree {
     this.modalContent = modalContent;
     this.searchInput = searchInput;
     this.statusRegion = statusRegion;
+    this.summary = summary;
+    this.generationFilters = generationFilters;
     this.expandedNodes = new Set();
     this.filterQuery = '';
+    this.generationLevel = null;
+    this.lastSummary = '';
     this.lastFocused = null;
     this._onKeyDown = this._onKeyDown.bind(this);
     this._onDocumentClick = this._onDocumentClick.bind(this);
@@ -34,6 +49,7 @@ export class FamilyTree {
 
   init() {
     this.setupEventListeners();
+    this.syncGenerationChips();
     this.render();
     this.announce(`${Object.keys(this.data).length} deities loaded. Explore the lineage.`);
   }
@@ -42,6 +58,13 @@ export class FamilyTree {
     document.getElementById('expandAll')?.addEventListener('click', () => this.expandAll());
     document.getElementById('collapseAll')?.addEventListener('click', () => this.collapseAll());
     document.getElementById('resetView')?.addEventListener('click', () => this.resetView());
+
+    this.generationFilters?.addEventListener('click', (event) => {
+      const button = event.target.closest('[data-generation]');
+      if (!button || !this.generationFilters.contains(button)) return;
+      const value = button.dataset.generation;
+      this.setGeneration(value === 'all' ? null : Number(value));
+    });
 
     this.modal.querySelector('[data-close-modal]')?.addEventListener('click', () => this.closeModal());
     this.modal.addEventListener('click', (e) => {
@@ -54,12 +77,7 @@ export class FamilyTree {
       this.searchInput.addEventListener('input', (e) => {
         this.filterQuery = e.target.value;
         this.render();
-        const matches = searchDeities(this.data, this.filterQuery).length;
-        this.announce(
-          this.filterQuery.trim()
-            ? `${matches} ${matches === 1 ? 'deity' : 'deities'} match “${this.filterQuery.trim()}”.`
-            : 'Filter cleared. Showing all generations.'
-        );
+        this.announce(this.lastSummary);
       });
     }
   }
@@ -93,32 +111,82 @@ export class FamilyTree {
     this.statusRegion.textContent = message;
   }
 
+  setGeneration(level) {
+    const numeric = level == null ? null : Number(level);
+    const known = GENERATION_META.find((meta) => meta.level === numeric) ?? null;
+    this.generationLevel = known ? known.level : null;
+    this.syncGenerationChips();
+    this.render();
+    this.announce(known ? `Showing ${known.label}.` : 'Showing all generations.');
+  }
+
+  syncGenerationChips() {
+    if (!this.generationFilters) return;
+    const current = this.generationLevel == null ? 'all' : String(this.generationLevel);
+    for (const button of this.generationFilters.querySelectorAll('[data-generation]')) {
+      const active = button.dataset.generation === current;
+      button.classList.toggle('is-active', active);
+      button.setAttribute('aria-pressed', active ? 'true' : 'false');
+    }
+  }
+
   render() {
     this.root.replaceChildren();
     this.expandedNodes.clear();
 
     const matches = new Set(searchDeities(this.data, this.filterQuery).map((g) => g.name));
     const hasFilter = Boolean(this.filterQuery.trim());
+    const generation = GENERATION_META.find((meta) => meta.level === this.generationLevel) ?? null;
 
     const tree = el('div', { className: 'tree-stack', attrs: { role: 'tree', 'aria-label': 'Greek gods family tree' } });
+    let visible = 0;
 
     for (const meta of GENERATION_META) {
+      if (generation && meta.level !== generation.level) continue;
       const gods = getGodsByGeneration(this.data, meta.level).filter((god) => !hasFilter || matches.has(god.name));
       if (gods.length === 0) continue;
+      visible += gods.length;
       tree.appendChild(this.createGeneration(meta, gods));
     }
 
     if (!tree.childElementCount) {
+      const query = this.filterQuery.trim();
+      const scope = generation ? ` in ${generation.label}` : '';
       tree.appendChild(
         el('p', {
           className: 'empty-state',
-          text: 'No deities match your search. Try another name or domain.',
-          attrs: { role: 'status' },
+          text: query
+            ? `No deities match “${query}”${scope}. Try another name or domain.`
+            : `No deities recorded${scope}.`,
         })
       );
     }
 
     this.root.appendChild(tree);
+    this.updateSummary(visible, generation);
+  }
+
+  updateSummary(visible, generation) {
+    const query = this.filterQuery.trim();
+    const noun = visible === 1 ? 'deity' : 'deities';
+    const verb = visible === 1 ? 'matches' : 'match';
+    const label = generation?.label;
+    let text;
+
+    if (!query && !label) {
+      text = `${visible} deities. Choose a generation, or expand a card to reveal descendants.`;
+    } else if (visible === 0 && query) {
+      text = label ? `No deities in ${label} match “${query}”.` : `No deities match “${query}”.`;
+    } else if (query && label) {
+      text = `${visible} ${noun} in ${label} ${verb} “${query}”.`;
+    } else if (query) {
+      text = `${visible} ${noun} ${verb} “${query}”.`;
+    } else {
+      text = `${visible} ${noun} in ${label}.`;
+    }
+
+    this.lastSummary = text;
+    if (this.summary) this.summary.textContent = text;
   }
 
   createGeneration(meta, gods) {
@@ -167,8 +235,13 @@ export class FamilyTree {
     const name = el('h3', { className: 'god-name', text: god.name });
     const title = el('p', { className: 'god-title', text: god.title });
     const description = el('p', { className: 'god-description', text: god.description });
+    const domain = typeof god.attributes?.Domain === 'string' ? god.attributes.Domain : '';
 
-    card.append(avatar, name, title, description);
+    card.append(avatar, name, title);
+    if (domain && !isPlaceholder) {
+      card.appendChild(el('p', { className: 'god-domain', text: domain }));
+    }
+    card.appendChild(description);
 
     const childrenContainer = el('div', {
       className: 'children-container',
@@ -200,8 +273,6 @@ export class FamilyTree {
         document.createTextNode(` Show children (${god.children.length})`)
       );
       card.append(expandBtn, childrenContainer);
-    } else if (!isPlaceholder) {
-      card.appendChild(el('p', { className: 'no-children', text: 'No children recorded' }));
     }
 
     const openDetails = () => {
@@ -313,9 +384,11 @@ export class FamilyTree {
       this.searchInput.value = '';
       this.filterQuery = '';
     }
+    this.generationLevel = null;
+    this.syncGenerationChips();
     this.render();
-    this.root.closest('.family-tree-container')?.scrollTo({ top: 0, behavior: 'smooth' });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    this.root.closest('.family-tree-container')?.scrollTo?.({ top: 0, behavior: 'smooth' });
+    window.scrollTo?.({ top: 0, behavior: 'smooth' });
     this.announce('View reset.');
   }
 
@@ -347,13 +420,23 @@ export class FamilyTree {
     const attributes = el('section', { className: 'modal-section' }, [el('h3', { text: 'Attributes' }), attrList]);
 
     const bodyChildren = [about, attributes];
+    const parents = findParents(this.data, god.name);
+    if (parents.length) {
+      bodyChildren.push(
+        el('section', { className: 'modal-section' }, [
+          el('h3', { text: 'Parents' }),
+          this.createLineageList(parents.map((parent) => parent.name)),
+        ])
+      );
+    }
 
     if (god.children?.length) {
-      const childList = el('ul');
-      for (const child of god.children) {
-        childList.appendChild(el('li', {}, [el('span', { className: 'attribute-value', text: child })]));
-      }
-      bodyChildren.push(el('section', { className: 'modal-section' }, [el('h3', { text: 'Children' }), childList]));
+      bodyChildren.push(
+        el('section', { className: 'modal-section' }, [
+          el('h3', { text: 'Children' }),
+          this.createLineageList(god.children),
+        ])
+      );
     }
 
     const body = el('div', { className: 'modal-body' }, bodyChildren);
@@ -367,6 +450,35 @@ export class FamilyTree {
     this.modal.setAttribute('aria-labelledby', 'modal-title');
     focusFirstFocusable(this.modal) || this.modal.querySelector('[data-close-modal]')?.focus();
     this.announce(`Opened details for ${god.name}.`);
+  }
+
+  createLineageList(names) {
+    const list = el('ul', { className: 'lineage-list' });
+    for (const name of names) {
+      const known = getDeity(this.data, name);
+      if (known) {
+        list.appendChild(
+          el('li', {}, [
+            el('button', {
+              className: 'lineage-link',
+              attrs: { type: 'button' },
+              text: known.name,
+              on: {
+                click: () => this.showGodModal(known),
+              },
+            }),
+          ])
+        );
+      } else {
+        const item = el('li', { className: 'lineage-missing' });
+        item.append(
+          el('span', { className: 'attribute-value', text: name }),
+          el('span', { className: 'lineage-note', text: 'Not in this record' })
+        );
+        list.appendChild(item);
+      }
+    }
+    return list;
   }
 
   closeModal() {
@@ -387,8 +499,18 @@ export function bootstrapFamilyTree(documentRef = document) {
   const modalContent = documentRef.getElementById('modalContent');
   const searchInput = documentRef.getElementById('searchGods');
   const statusRegion = documentRef.getElementById('statusRegion');
+  const summary = documentRef.getElementById('searchSummary');
+  const generationFilters = documentRef.getElementById('generationFilters');
 
-  const app = new FamilyTree({ root, modal, modalContent, searchInput, statusRegion });
+  const app = new FamilyTree({
+    root,
+    modal,
+    modalContent,
+    searchInput,
+    statusRegion,
+    summary,
+    generationFilters,
+  });
   app.init();
   return app;
 }

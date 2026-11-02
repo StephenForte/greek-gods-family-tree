@@ -32,7 +32,8 @@ export function groupChildrenByType(children, data, olympians = OLYMPIANS, heroe
 }
 
 /**
- * Return deities whose name/title/description match a query (case-insensitive).
+ * Return deities whose own fields match a query (case-insensitive).
+ * Children names are excluded so a query for "Apollo" does not also match Zeus.
  */
 export function searchDeities(data, query) {
   const q = String(query ?? '')
@@ -41,13 +42,23 @@ export function searchDeities(data, query) {
   if (!q) return Object.values(data);
 
   return Object.values(data).filter((god) => {
-    // Search only the deity's own fields — not children names — so a query for a
-    // child (e.g. "Apollo") does not also match parents that list that child.
-    const haystack = [god.name, god.title, god.description, god.mythology]
+    const attributeText =
+      god.attributes && typeof god.attributes === 'object' ? Object.values(god.attributes) : [];
+    const haystack = [god.name, god.title, god.description, god.mythology, ...attributeText]
       .join(' ')
       .toLowerCase();
     return haystack.includes(q);
   });
+}
+
+/**
+ * Deities that list `name` among their children, in data order.
+ */
+export function findParents(data, name) {
+  if (typeof name !== 'string' || !name) return [];
+  return Object.values(data).filter(
+    (god) => Array.isArray(god.children) && god.children.includes(name)
+  );
 }
 
 /**

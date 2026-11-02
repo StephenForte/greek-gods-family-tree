@@ -25,13 +25,13 @@
       <div class="hero__copy">
         <p class="brand">Theoi</p>
         <h1 class="hero__title">Greek Gods Family Tree</h1>
-        <p class="hero__lede">Trace lineage from Chaos to Olympus — expand branches, search the pantheon, and open each deity’s story.</p>
+        <p class="hero__lede">Trace lineage from Chaos to Olympus. Filter a generation, search by name or domain, and follow parents and children.</p>
       </div>
       <div class="hero__actions">
         <a class="btn btn-primary" href="#main">Enter the lineage</a>
         <label class="search-field">
           <span class="visually-hidden">Search deities</span>
-          <input id="searchGods" type="search" placeholder="Search deities…" autocomplete="off" spellcheck="false">
+          <input id="searchGods" type="search" placeholder="Search name, title, or domain…" autocomplete="off" spellcheck="false" aria-describedby="searchSummary">
         </label>
       </div>
     </header>
@@ -40,12 +40,19 @@
       <div class="tree-panel__chrome">
         <div class="tree-panel__heading">
           <h2 class="tree-panel__title">Divine lineage</h2>
-          <p class="tree-panel__hint">Expand a deity to reveal their descendants</p>
+          <p id="searchSummary" class="tree-panel__summary">Expand a deity to reveal their descendants</p>
         </div>
         <div class="toolbar" role="toolbar" aria-label="Tree controls">
           <button id="expandAll" type="button" class="btn btn-secondary">Expand all</button>
           <button id="collapseAll" type="button" class="btn btn-secondary">Collapse all</button>
           <button id="resetView" type="button" class="btn btn-ghost">Reset view</button>
+        </div>
+        <div id="generationFilters" class="gen-filters" role="group" aria-label="Filter by generation">
+          <button type="button" class="chip is-active" data-generation="all" aria-pressed="true">All</button>
+          <button type="button" class="chip" data-generation="0" aria-pressed="false">Primordial</button>
+          <button type="button" class="chip" data-generation="1" aria-pressed="false">Earth &amp; Sky</button>
+          <button type="button" class="chip" data-generation="2" aria-pressed="false">Titans</button>
+          <button type="button" class="chip" data-generation="3" aria-pressed="false">Olympians</button>
         </div>
       </div>
 
