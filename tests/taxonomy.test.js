@@ -3,6 +3,7 @@ import { greekGodsData } from '../src/data/gods.js';
 import {
   classifyChild,
   deitiesWithChildren,
+  findParents,
   groupChildrenByType,
   resolveChildren,
   searchDeities,
@@ -40,6 +41,11 @@ describe('searchDeities', () => {
     expect(byDomain.map((g) => g.name)).toEqual(expect.arrayContaining(['Hades', 'Persephone']));
   });
 
+  it('matches a domain that appears only in attributes', () => {
+    const matches = searchDeities(greekGodsData, 'caduceus').map((g) => g.name);
+    expect(matches).toEqual(['Hermes']);
+  });
+
   it('does not match parents solely because they list a child', () => {
     const apolloMatches = searchDeities(greekGodsData, 'Apollo').map((g) => g.name);
     expect(apolloMatches).toContain('Apollo');
@@ -47,6 +53,17 @@ describe('searchDeities', () => {
 
     const hestiaMatches = searchDeities(greekGodsData, 'Hestia').map((g) => g.name);
     expect(hestiaMatches).toEqual(['Hestia']);
+  });
+});
+
+describe('findParents', () => {
+  it('returns the deities who list the child, in data order', () => {
+    expect(findParents(greekGodsData, 'Zeus').map((god) => god.name)).toEqual(['Cronus', 'Rhea']);
+  });
+
+  it('returns an empty list when the name is unknown or blank', () => {
+    expect(findParents(greekGodsData, 'Nobody')).toEqual([]);
+    expect(findParents(greekGodsData, '')).toEqual([]);
   });
 });
 

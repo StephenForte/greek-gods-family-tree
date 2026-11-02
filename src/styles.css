@@ -97,7 +97,9 @@ body.modal-open {
 
 .page {
   width: min(1280px, calc(100% - 2rem));
+  max-width: 100%;
   margin: 0 auto;
+  min-width: 0;
   min-height: 100vh;
   min-height: 100dvh;
   display: flex;
@@ -191,6 +193,7 @@ body.modal-open {
 
 .tree-panel {
   flex: 1 1 auto;
+  min-width: 0;
   min-height: 0;
   display: flex;
   flex-direction: column;
@@ -205,10 +208,10 @@ body.modal-open {
 
 .tree-panel__chrome {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.85rem 1.25rem;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.85rem;
+  min-width: 0;
   padding: 1rem 1.25rem 0;
   flex: 0 0 auto;
 }
@@ -225,11 +228,43 @@ body.modal-open {
   letter-spacing: 0.02em;
 }
 
-.tree-panel__hint {
-  margin-top: 0.15rem;
+.tree-panel__summary {
+  margin-top: 0.2rem;
   font-size: 0.82rem;
-  font-weight: 300;
+  font-weight: 400;
   color: var(--ink-muted);
+}
+
+.gen-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.chip {
+  appearance: none;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink-muted);
+  border-radius: 999px;
+  padding: 0.38rem 0.8rem;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.25s var(--ease), border-color 0.25s var(--ease), color 0.25s var(--ease);
+}
+
+.chip:hover {
+  border-color: var(--bronze);
+  color: var(--bronze-soft);
+}
+
+.chip.is-active {
+  background: var(--bronze);
+  border-color: var(--bronze);
+  color: var(--ink-deep);
 }
 
 .toolbar {
@@ -237,6 +272,7 @@ body.modal-open {
   flex-wrap: wrap;
   gap: 0.55rem;
   margin: 0;
+  min-width: 0;
 }
 
 .btn {
@@ -256,10 +292,12 @@ body.modal-open {
 }
 
 .btn:focus-visible,
+.chip:focus-visible,
 .search-field input:focus-visible,
 .god-card:focus-visible,
 .close:focus-visible,
 .expand-btn:focus-visible,
+.lineage-link:focus-visible,
 .family-tree-container:focus-visible {
   outline: 2px solid var(--bronze);
   outline-offset: 3px;
@@ -422,6 +460,18 @@ body.modal-open {
   font-style: italic;
 }
 
+.god-domain {
+  margin-top: 0.55rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.01em;
+  color: var(--foam);
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 .god-description {
   margin-top: 0.65rem;
   font-size: 0.8rem;
@@ -457,10 +507,43 @@ body.modal-open {
   color: var(--bronze);
 }
 
-.no-children {
-  margin-top: 0.85rem;
+.lineage-list li {
+  display: block;
+  padding: 0.28rem 0;
+  border-bottom: 0;
+}
+
+.lineage-link {
+  appearance: none;
+  width: 100%;
+  text-align: left;
+  background: rgba(210, 177, 90, 0.08);
+  border: 1px solid var(--line);
+  color: var(--foam);
+  border-radius: var(--radius);
+  padding: 0.55rem 0.75rem;
+  font: inherit;
+  font-size: 0.92rem;
+  cursor: pointer;
+  transition: background 0.25s var(--ease), border-color 0.25s var(--ease), color 0.25s var(--ease);
+}
+
+.lineage-link:hover {
+  background: rgba(210, 177, 90, 0.16);
+  border-color: var(--bronze);
+  color: var(--bronze-soft);
+}
+
+.lineage-missing {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: baseline;
+}
+
+.lineage-note {
+  color: var(--ink-muted);
   font-size: 0.78rem;
-  color: rgba(159, 179, 168, 0.75);
   font-style: italic;
 }
 
@@ -665,6 +748,31 @@ body.modal-open {
   animation: rise 0.35s var(--ease) both;
 }
 
+@media (min-width: 900px) {
+  .tree-panel__chrome {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, max-content);
+    align-items: center;
+    column-gap: 1.25rem;
+  }
+
+  .tree-panel__heading {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .toolbar {
+    grid-column: 2;
+    grid-row: 1;
+    justify-content: flex-end;
+  }
+
+  .gen-filters {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}
+
 @media (max-width: 860px) {
   .hero {
     grid-template-columns: 1fr;
@@ -703,7 +811,6 @@ body.modal-open {
 
   .tree-panel__chrome {
     padding: 0.9rem 1rem 0;
-    align-items: stretch;
   }
 
   .toolbar {
